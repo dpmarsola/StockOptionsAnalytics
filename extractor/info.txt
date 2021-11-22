@@ -1,0 +1,2 @@
+--- Este e o site com todos os papeis de NYSE, NASDAQ e AMEX
+https://www.nasdaq.com/market-activity/stocks/screener

@@ -1,0 +1,39 @@
+#!/usr/bin/bash
+
+cleanStocksSpecialChars(){
+
+    grep -v "[\^\\\/]" ../files/stock.list.all > cleanStocksSpecialChars.tmp.file
+    mv cleanStocksSpecialChars.tmp.file ../files/stock.list.all.clean
+
+}
+
+calculatePartialSearches(){
+
+    linesSearchedPerTasks=500
+    totalStocks=$(cat ../files/stock.list.all.clean | wc -l)
+    numberOfTasks=$(expr $totalStocks / $linesSearchedPerTasks)
+
+}
+
+main(){
+
+    count=1
+    linesToSkip=0
+
+    cleanStocksSpecialChars
+    calculatePartialSearches
+
+    while [ "$count" -le "$numberOfTasks" ] 
+    do
+        echo $(date "+%D %H:%M:%S") " - Starting task >>> runSearchForOptions PSearch $linesToSkip $linesSearchedPerTasks" >> ../logs/presets.log
+        ./runSearchForOptions PSearch $linesToSkip $linesSearchedPerTasks & 2> /dev/null >/dev/null
+        count=$(expr $count + 1)
+        linesToSkip=$(expr $linesToSkip + $linesSearchedPerTasks + 1)
+    done
+    
+    ps -ef | grep PSearch
+}
+
+echo $(date "+%D %H:%M:%S") " --------------------------------------- " >> ../logs/presets.log
+
+main
