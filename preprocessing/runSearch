@@ -1,0 +1,47 @@
+#!/usr/bin/bash
+
+runSearch(){
+
+    echo BL $beginLine LPT $linesPerTask CSL $counterSkipLines CLP $counterLinesProcessed
+
+}
+
+main(){
+
+    beginLine=$1
+    linesPerTask=$2
+    counterSkipLines=0
+    counterLinesProcessed=0
+  
+    if [ -z "$beginLine" ]
+    then
+        if [ -z "$linesPerTask"]
+        then
+            echo $(date "+%D %H:%M:%S") " - Error pre processing: Parm 2 missing. " >> ../logs/preprocessing.log
+        fi
+    else
+        while read line 
+        do
+            
+            if [ "$counterSkipLines" -ge "$beginLine" ]
+            then
+                runSearch $line
+                counterLinesProcessed=$(expr $counterLinesProcessed + 1)
+
+                if [ "$counterLinesProcessed" -eq "$linesPerTask" ]
+                then
+                    break
+                fi
+            fi
+
+            counterSkipLines=$(expr $counterSkipLines + 1)
+
+        done < ../files/stocks.with.options
+    fi
+
+
+}
+
+echo $(date "+%D %H:%M:%S") " --------------------------------------- " >> ../logs/preprocessing.log
+
+main $1 $2

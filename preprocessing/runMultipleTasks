@@ -25,8 +25,8 @@ main(){
 
     while [ "$count" -le "$numberOfTasks" ] 
     do
-        echo $(date "+%D %H:%M:%S") " - Starting task >>> runSearchForOptions PSearch $linesToSkip $linesSearchedPerTasks" >> ../logs/presets.log
-        ./runSearchForOptions PSearch $linesToSkip $linesSearchedPerTasks & 2> /dev/null >/dev/null
+        echo $(date "+%D %H:%M:%S") " - Starting task >>> runSearchForOptions $linesToSkip $linesSearchedPerTasks" >> ../logs/preprocessing.log
+        ./runSearchForOptions $linesToSkip $linesSearchedPerTasks & 2> /dev/null >/dev/null
         count=$(expr $count + 1)
         linesToSkip=$(expr $linesToSkip + $linesSearchedPerTasks + 1)
     done
@@ -34,6 +34,6 @@ main(){
     ps -ef | grep PSearch
 }
 
-echo $(date "+%D %H:%M:%S") " --------------------------------------- " >> ../logs/presets.log
+echo $(date "+%D %H:%M:%S") " --------------------------------------- " >> ../logs/preprocessing.log
 
 main
