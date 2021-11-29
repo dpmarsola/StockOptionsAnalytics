@@ -7,33 +7,40 @@ cleanStocksSpecialChars(){
 
 }
 
-calculatePartialSearches(){
+calcNumberOfTasks(){
 
-    linesSearchedPerTasks=500
+    linesPerTasks=500
     totalStocks=$(cat ../files/stock.list.all.clean | wc -l)
-    numberOfTasks=$(expr $totalStocks / $linesSearchedPerTasks)
+    numberOfTasks=$(expr $totalStocks / $linesPerTasks)
+    remainder=$(expr $totalStocks % $linesPerTasks)
+
+    if [ "$numberOfTasks" -lt "1" ]
+    then
+        numberOfTasks=1
+    else
+        if [ "$remainder" -ne "0" ]
+        then
+            numberOfTasks=$(expr $numberOfTasks + 1)
+        fi
+    fi
 
 }
 
 main(){
 
     count=1
-    linesToSkip=0
+    beginLine=0
 
     cleanStocksSpecialChars
-    calculatePartialSearches
+    calcNumberOfTasks
 
     while [ "$count" -le "$numberOfTasks" ] 
     do
-        echo $(date "+%D %H:%M:%S") " - Starting task >>> runSearchForOptions $linesToSkip $linesSearchedPerTasks" >> ../logs/preprocessing.log
-        ./runSearchForOptions $linesToSkip $linesSearchedPerTasks & 2> /dev/null >/dev/null
+        ./runSearch $beginLine $linesPerTasks & 2> /dev/null >/dev/null
         count=$(expr $count + 1)
-        linesToSkip=$(expr $linesToSkip + $linesSearchedPerTasks + 1)
+        beginLine=$(expr $beginLine + $linesPerTasks + 1)
     done
     
-    ps -ef | grep PSearch
 }
-
-echo $(date "+%D %H:%M:%S") " --------------------------------------- " >> ../logs/preprocessing.log
 
 main

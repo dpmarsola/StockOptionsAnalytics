@@ -1,10 +1,36 @@
 #!/usr/bin/bash
 
+runSearchDebug(){
+
+    echo STOCK $1 BL $beginLine LPT $linesPerTask CSL $counterSkipLines CLP $counterLinesProcessed
+
+}
+
 runSearch(){
 
-    curl https://finance.yahoo.com/quote/$1/options?p=$1 > preprocessing.tmp.working.file
-    echo $1 BL $beginLine LPT $linesPerTask CSL $counterSkipLines CLP $counterLinesProcessed
-    sed -i 's/>/\n/g' preprocessing.tmp.working.file
+    curl https://finance.yahoo.com/quote/$1/options?p=$1 > preprocessing.tmp.working.file.1
+
+    sed -i 's/>/\n/g' preprocessing.tmp.working.file.1
+    grep root.App.main preprocessing.tmp.working.file.1 > preprocessing.tmp.working.file.2
+    cut -d'=' -f1-1000 preprocessing.tmp.working.file.2 > preprocessing.tmp.working.file.3
+    str1=$(cut -d'=' -f2-1000 preprocessing.tmp.working.file.3)
+    echo ${str1:1:-1} > preprocessing.tmp.working.file.4
+
+    cat preprocessing.tmp.working.file.4 | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['contractSymbol'])"
+    
+    if [ "$?" -eq "0" ]
+    then
+        echo $1 >> ../files/stock.list.all.clean.with.options
+        #cat preprocessing.tmp.working.file.4 | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['impliedVolatility']['fmt'])"
+        #cat preprocessing.tmp.working.file.4 | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['expiration']['fmt'])"
+        #cat preprocessing.tmp.working.file.4 | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['strike']['fmt'])"
+        #cat preprocessing.tmp.working.file.4 | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['lastPrice']['fmt'])"
+        #cat preprocessing.tmp.working.file.4 | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['inTheMoney'])"
+        #cat preprocessing.tmp.working.file.4 | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['openInterest']['fmt'])"
+        #cat preprocessing.tmp.working.file.4 | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['lastTradeDate']['fmt'])"
+    fi
+
+    rm preprocessing.tmp.working.*
 
 }
 
@@ -28,7 +54,7 @@ main(){
             if [ "$counterSkipLines" -ge "$beginLine" ]
             then
                 symbol=$(echo $line | cut -d',' -f1)
-                runSearch $symbol
+                runSearchDebug $symbol >> preprocessing.tmp.working.$$
                 counterLinesProcessed=$(expr $counterLinesProcessed + 1)
 
                 if [ "$counterLinesProcessed" -eq "$linesPerTask" ]
@@ -42,9 +68,9 @@ main(){
         done < ../files/stock.list.all.clean
     fi
 
-
 }
 
 echo $(date "+%D %H:%M:%S") " --------------------------------------- " >> ../logs/preprocessing.log
+echo $(date "+%D %H:%M:%S") " - Starting task $$ >>> beginning at line $1 and will seach the next $2 lines" >> ../logs/preprocessing.log
 
 main $1 $2

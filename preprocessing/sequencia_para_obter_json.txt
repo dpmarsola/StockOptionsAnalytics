@@ -9,7 +9,7 @@ cut -d' ' -f3-100000 teste3 > teste4
 cut -d'=' -f2-1000 teste3
 
 3. retira o ultimo caracter para que o json fique valido
-str1=$(cut -d'=' -f2-1000 teste3)
+str1=$(cut -d'=' -f1-1000 teste3)
 echo ${str1:1:-1} > teste5
 
 4. ai é so usar o python pra ler o json
