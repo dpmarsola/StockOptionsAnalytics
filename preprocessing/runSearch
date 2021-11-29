@@ -41,11 +41,13 @@ main(){
     counterSkipLines=0
     counterLinesProcessed=0
   
-    if [ -z "$beginLine" ]
+    if [ -z "$linesPerTask" ]
     then
-        if [ -z "$linesPerTask"]
+        if [ -z "$beginLine" ]
         then
-            echo $(date "+%D %H:%M:%S") " - Error pre processing: Parm 2 missing. " >> ../logs/preprocessing.log
+            echo $(date "+%D %H:%M:%S") " - Error pre processing: Parms 1 (begin line) and 2 (lines per task) missing. " >> ../logs/preprocessing.log
+        else
+            echo $(date "+%D %H:%M:%S") " - Error pre processing: Parm 2 (lines per task) missing. " >> ../logs/preprocessing.log
         fi
     else
         while read line 

@@ -38,7 +38,7 @@ main(){
     do
         ./runSearch $beginLine $linesPerTasks & 2> /dev/null >/dev/null
         count=$(expr $count + 1)
-        beginLine=$(expr $beginLine + $linesPerTasks + 1)
+        beginLine=$(expr $beginLine + $linesPerTasks)
     done
     
 }
