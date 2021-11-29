@@ -1,0 +1,24 @@
+1. faz o arquivo ter linhas ao invés de todo o html estar numa unica linha...
+sed -i 's/>/\n/g' preprocessing.tmp.working.file
+
+2. obtem somente a perte do json
+grep root.App.main teste2 > teste3
+
+3. obtem apenas a parte json de verdade (um ou outro)
+cut -d' ' -f3-100000 teste3 > teste4
+cut -d'=' -f2-1000 teste3
+
+3. retira o ultimo caracter para que o json fique valido
+str1=$(cut -d'=' -f2-1000 teste3)
+echo ${str1:1:-1} > teste5
+
+4. ai é so usar o python pra ler o json
+Simbolo (formato XXXAAMMDDC99999999)
+cat json.formatado | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['contractSymbol'])"
+cat json.formatado | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['impliedVolatility']['fmt'])"
+cat json.formatado | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['expiration']['fmt'])"
+cat json.formatado | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['strike']['fmt'])"
+cat json.formatado | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['lastPrice']['fmt'])"
+cat json.formatado | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['inTheMoney'])"
+cat json.formatado | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['openInterest']['fmt'])"
+cat json.formatado | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['lastTradeDate']['fmt'])"

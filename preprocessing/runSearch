@@ -2,7 +2,9 @@
 
 runSearch(){
 
-    echo BL $beginLine LPT $linesPerTask CSL $counterSkipLines CLP $counterLinesProcessed
+    curl https://finance.yahoo.com/quote/$1/options?p=$1 > preprocessing.tmp.working.file
+    echo $1 BL $beginLine LPT $linesPerTask CSL $counterSkipLines CLP $counterLinesProcessed
+    sed -i 's/>/\n/g' preprocessing.tmp.working.file
 
 }
 
@@ -25,7 +27,8 @@ main(){
             
             if [ "$counterSkipLines" -ge "$beginLine" ]
             then
-                runSearch $line
+                symbol=$(echo $line | cut -d',' -f1)
+                runSearch $symbol
                 counterLinesProcessed=$(expr $counterLinesProcessed + 1)
 
                 if [ "$counterLinesProcessed" -eq "$linesPerTask" ]
@@ -36,7 +39,7 @@ main(){
 
             counterSkipLines=$(expr $counterSkipLines + 1)
 
-        done < ../files/stocks.with.options
+        done < ../files/stock.list.all.clean
     fi
 
 
