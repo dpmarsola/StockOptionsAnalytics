@@ -1,0 +1,13 @@
+--- limpa processos
+kill -9 $(ps -ef | grep runS | cut -d' ' -f5)
+
+--- testa busca e leitura de um unico ativo
+busca(){
+    rm preprocessing.tmp.working.file.*
+    strAux1=$(curl https://finance.yahoo.com/quote/$1/options?p=$1)
+    echo $strAux1 | sed 's/>/\n/g' | grep 'root.App.main' | cut -d'=' -f4-10000 | cut -d';' -f1-77 > preprocessing.tmp.working.file.1234
+}
+
+le(){
+   cat preprocessing.tmp.working.file.1234 | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['contractSymbol'])" 2> preprocessing.tmp.working.file.fail.1234
+}

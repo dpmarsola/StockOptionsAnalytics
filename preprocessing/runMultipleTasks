@@ -34,13 +34,17 @@ main(){
     cleanStocksSpecialChars
     calcNumberOfTasks
 
+    echo $(date "+%D %H:%M:%S") " -------------->>>> INICIO <<<<------------------ " >> ../logs/preprocessing.log
+
     while [ "$count" -le "$numberOfTasks" ] 
     do
-        ./runSearch $beginLine $linesPerTasks & 2> /dev/null >/dev/null
+        ./runSearch $beginLine $linesPerTasks & 2> /dev/null > /dev/null
         count=$(expr $count + 1)
         beginLine=$(expr $beginLine + $linesPerTasks)
     done
     
+    echo $(date "+%D %H:%M:%S") " -------------->>>> FIM <<<<------------------ " >> ../logs/preprocessing.log
+
 }
 
 main
