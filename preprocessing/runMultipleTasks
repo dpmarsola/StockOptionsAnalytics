@@ -7,12 +7,15 @@ cleanStocksSpecialChars(){
 
 }
 
+getParameters(){
+    linesPerTask=$(grep "^linesPerTask" ./preprocessing.conf | cut -d'=' -f2)
+}
+
 calcNumberOfTasks(){
 
-    linesPerTasks=500
     totalStocks=$(cat ../files/stock.list.all.clean | wc -l)
-    numberOfTasks=$(expr $totalStocks / $linesPerTasks)
-    remainder=$(expr $totalStocks % $linesPerTasks)
+    numberOfTasks=$(expr $totalStocks / $linesPerTask)
+    remainder=$(expr $totalStocks % $linesPerTask)
 
     if [ "$numberOfTasks" -lt "1" ]
     then
@@ -32,15 +35,16 @@ main(){
     beginLine=0
 
     cleanStocksSpecialChars
+    getParameters
     calcNumberOfTasks
 
     echo $(date "+%D %H:%M:%S") " -------------->>>> INICIO <<<<------------------ " >> ../logs/preprocessing.log
 
     while [ "$count" -le "$numberOfTasks" ] 
     do
-        ./runSearch $beginLine $linesPerTasks & 2> /dev/null > /dev/null
+        ./runSearch $beginLine $linesPerTask & 2> /dev/null > /dev/null
         count=$(expr $count + 1)
-        beginLine=$(expr $beginLine + $linesPerTasks)
+        beginLine=$(expr $beginLine + $linesPerTask)
     done
     
     echo $(date "+%D %H:%M:%S") " -------------->>>> FIM <<<<------------------ " >> ../logs/preprocessing.log

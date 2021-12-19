@@ -3,7 +3,7 @@
 runSearch(){
 
     strMsgLog="$(date "+%D %H:%M:%S") Searching $1... "
-    strAux1=$(curl https://finance.yahoo.com/quote/$1/options?p=$1)
+    strAux1=$(curl https://finance.yahoo.com/quote/$1/options?p=$1 2> /dev/null)
     echo $strAux1 | sed 's/>/\n/g' | grep 'root.App.main' | cut -d'=' -f4-10000 | cut -d';' -f1-77 > preprocessing.tmp.working.file.$$
     
     if [ "$?" -eq "0" ]
@@ -28,7 +28,7 @@ runSearch(){
     fi
 
     echo $strMsgLog >> ../logs/preprocessing.log
-    rm preprocessing.tmp.working.file.*.$$
+    rm preprocessing.tmp.working.*.$$
 
 }
 
