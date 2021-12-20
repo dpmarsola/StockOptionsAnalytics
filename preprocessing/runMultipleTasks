@@ -2,8 +2,8 @@
 
 cleanStocksSpecialChars(){
 
-    grep -v "[\^\\\/]" ..~/archive/files/stock.list.all > cleanStocksSpecialChars.tmp.file
-    mv cleanStocksSpecialChars.tmp.file ..~/archive/files/stock.list.all.clean
+    grep -v "[\^\\\/]" ~/archive/files/stock.list.all > cleanStocksSpecialChars.tmp.file
+    mv cleanStocksSpecialChars.tmp.file ~/archive/files/stock.list.all.clean
 
 }
 
@@ -13,7 +13,7 @@ getParameters(){
 
 calcNumberOfTasks(){
 
-    totalStocks=$(cat ..~/archive/files/stock.list.all.clean | wc -l)
+    totalStocks=$(cat ~/archive/files/stock.list.all.clean | wc -l)
     numberOfTasks=$(expr $totalStocks / $linesPerTask)
     remainder=$(expr $totalStocks % $linesPerTask)
 
@@ -38,7 +38,7 @@ main(){
     getParameters
     calcNumberOfTasks
 
-    echo $(date "+%D %H:%M:%S") " -------------->>>> INICIO <<<<------------------ " >> ..~/archive/logs/preprocessing.log
+    echo $(date "+%D %H:%M:%S") " -------------->>>> INICIO <<<<------------------ " >> ~/archive/logs/preprocessing.log
 
     while [ "$count" -le "$numberOfTasks" ] 
     do
@@ -47,7 +47,7 @@ main(){
         beginLine=$(expr $beginLine + $linesPerTask)
     done
     
-    echo $(date "+%D %H:%M:%S") " -------------->>>> FIM <<<<------------------ " >> ..~/archive/logs/preprocessing.log
+    echo $(date "+%D %H:%M:%S") " -------------->>>> FIM <<<<------------------ " >> ~/archive/logs/preprocessing.log
 
 }
 

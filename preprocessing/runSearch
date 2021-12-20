@@ -27,7 +27,7 @@ runSearch(){
         fi
     fi
 
-    echo $strMsgLog >> ..~/archive/logs/preprocessing.log
+    echo $strMsgLog >> ~/archive/logs/preprocessing.log
     rm preprocessing.tmp.working.*.$$
 
 }
@@ -43,9 +43,9 @@ main(){
     then
         if [ -z "$beginLine" ]
         then
-            echo $(date "+%D %H:%M:%S") " - Error pre processing: Parms 1 (begin line) and 2 (lines per task) missing. " >> ..~/archive/logs/preprocessing.log
+            echo $(date "+%D %H:%M:%S") " - Error pre processing: Parms 1 (begin line) and 2 (lines per task) missing. " >> ~/archive/logs/preprocessing.log
         else
-            echo $(date "+%D %H:%M:%S") " - Error pre processing: Parm 2 (lines per task) missing. " >> ..~/archive/logs/preprocessing.log
+            echo $(date "+%D %H:%M:%S") " - Error pre processing: Parm 2 (lines per task) missing. " >> ~/archive/logs/preprocessing.log
         fi
     else
         rm preprocessing.tmp.working.* 2> /dev/null
@@ -56,7 +56,7 @@ main(){
             if [ "$counterSkipLines" -ge "$beginLine" ]
             then
                 symbol=$(echo $line | cut -d',' -f1)
-                runSearch $symbol >> ..~/archive/files/preprocessing.stocks.with.options
+                runSearch $symbol >> ~/archive/files/preprocessing.stocks.with.options
                 counterLinesProcessed=$(expr $counterLinesProcessed + 1)
 
                 if [ "$counterLinesProcessed" -eq "$linesPerTask" ]
@@ -67,11 +67,11 @@ main(){
 
             counterSkipLines=$(expr $counterSkipLines + 1)
 
-        done < ..~/archive/files/stock.list.all.clean
+        done < ~/archive/files/stock.list.all.clean
     fi
 
 }
 
-echo $(date "+%D %H:%M:%S") " - Starting task $$ >>> beginning at line $1 and will seach the next $2 lines" >> ..~/archive/logs/preprocessing.log
+echo $(date "+%D %H:%M:%S") " - Starting task $$ >>> beginning at line $1 and will seach the next $2 lines" >> ~/archive/logs/preprocessing.log
 
 main $1 $2
