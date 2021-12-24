@@ -90,7 +90,7 @@ main(){
         if [ "$flagTasksEnded" == "true" ]
         then
             sort -n -k1n,1 ~/archive/files/preprocessing.stocks.with.options > tmp && \
-            mv tmp sort -n -k1n,1 ~/archive/files/preprocessing.stocks.with.options
+            mv tmp ~/archive/files/preprocessing.stocks.with.options
             break
         else
             sleep 0.5
