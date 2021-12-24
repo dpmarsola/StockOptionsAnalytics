@@ -4,31 +4,30 @@ runSearch(){
 
     strMsgLog="$(date "+%D %H:%M:%S") Searching $1... "
     strAux1=$(curl https://finance.yahoo.com/quote/$1/options?p=$1 2> /dev/null)
-    echo $strAux1 | sed 's/>/\n/g' | grep 'root.App.main' | cut -d'=' -f4-10000 | cut -d';' -f1-77 > preprocessing.tmp.working.file.$$
+    echo $strAux1 | sed 's/>/\n/g' | grep 'root.App.main' | cut -d'=' -f4-10000 | cut -d';' -f1-77 > ~/archive/temp/preprocessing.tmp.working.file.$$
     
     if [ "$?" -eq "0" ]
     then
-        strAux2=$(cat preprocessing.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['contractSymbol'])" 2> preprocessing.tmp.working.file.fail.$$ )
+        strAux2=$(cat ~/archive/temp/preprocessing.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['contractSymbol'])" 2> ~/archive/temp/preprocessing.tmp.working.file.fail.$$ )
 
-        if [ -s ./preprocessing.tmp.working.file.fail.$$ ]
+        if [ -s ~/archive/temp/preprocessing.tmp.working.file.fail.$$ ]
         then 
             strMsgLog=$(echo $strMsgLog "not found.")
         else
             strMsgLog=$(echo $strMsgLog "found OK.")
-            strAux3=$(cat preprocessing.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['impliedVolatility']['fmt'])" 2> /dev/null )
-            strAux4=$(cat preprocessing.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['strike']['fmt'])" 2> /dev/null )
-            strAux5=$(cat preprocessing.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['expiration']['fmt'])" 2> /dev/null )
-            strAux6=$(cat preprocessing.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['lastPrice']['fmt'])" 2> /dev/null )
-            strAux7=$(cat preprocessing.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['inTheMoney'])" 2> /dev/null )
-            strAux8=$(cat preprocessing.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['openInterest']['fmt'])" 2> /dev/null )
-            strAux9=$(cat preprocessing.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['lastTradeDate']['fmt'])" 2> /dev/null )
+            strAux3=$(cat ~/archive/temp/preprocessing.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['impliedVolatility']['fmt'])" 2> /dev/null )
+            strAux4=$(cat ~/archive/temp/preprocessing.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['strike']['fmt'])" 2> /dev/null )
+            strAux5=$(cat ~/archive/temp/preprocessing.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['expiration']['fmt'])" 2> /dev/null )
+            strAux6=$(cat ~/archive/temp/preprocessing.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['lastPrice']['fmt'])" 2> /dev/null )
+            strAux7=$(cat ~/archive/temp/preprocessing.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['inTheMoney'])" 2> /dev/null )
+            strAux8=$(cat ~/archive/temp/preprocessing.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['openInterest']['fmt'])" 2> /dev/null )
+            strAux9=$(cat ~/archive/temp/preprocessing.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['lastTradeDate']['fmt'])" 2> /dev/null )
     
             echo $1,$strAux2,$strAux3,$strAux4,$strAux5,$strAux6,$strAux7,$strAux8,$strAux9
         fi
     fi
 
     echo $strMsgLog >> ~/archive/logs/preprocessing.log
-    rm preprocessing.tmp.working.*.$$
 
 }
 
@@ -48,8 +47,6 @@ main(){
             echo $(date "+%D %H:%M:%S") " - Error pre processing: Parm 2 (lines per task) missing. " >> ~/archive/logs/preprocessing.log
         fi
     else
-        rm preprocessing.tmp.working.* 2> /dev/null
-
         while read line 
         do
             

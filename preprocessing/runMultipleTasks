@@ -1,5 +1,33 @@
 #!/usr/bin/bash
 
+cleanWorkingFiles(){
+
+    rm ~/archive/temp/preprocessing.tmp.working.* 2> /dev/null
+
+}
+
+backupOldFiles(){
+
+    scriptDir=$(pwd)
+
+    cd ~/archive/files/
+
+    for file in $(ls preprocessing*)
+    do
+        mv $file ~/archive/bkp/files/$file.$(date +%d%m%y%H%M)
+    done
+
+    cd ~/archive/logs/
+    
+    for file in $(ls preprocessing*)
+    do
+        mv $file ~/archive/bkp/logs/$file.$(date +%d%m%y%H%M)
+    done
+
+    cd $scriptDir
+
+}
+
 cleanStocksSpecialChars(){
 
     grep -v "[\^\\\/]" ~/archive/files/stock.list.all > cleanStocksSpecialChars.tmp.file
@@ -29,11 +57,19 @@ calcNumberOfTasks(){
 
 }
 
+keepTrackOfTasks(){
+    ls ~/archive/temp/preprocessing.tmp.working* 2> /dev/null >(if [ "$?" -eq "0" ]; then flagTasksEnded=false; else flagTasksEnded=true; fi)
+}
+
+
 main(){
 
     count=1
     beginLine=0
+    flagTasksEnded=false
 
+    backupOldFiles
+    cleanWorkingFiles
     cleanStocksSpecialChars
     getParameters
     calcNumberOfTasks
@@ -47,6 +83,21 @@ main(){
         beginLine=$(expr $beginLine + $linesPerTask)
     done
     
+    while true
+    do
+        keepTrackOfTasks
+        echo "flag" $flagTasksEnded
+        if [ "$flagTasksEnded" == "true" ]
+        then
+            sort -n -k1n,1 ~/archive/files/preprocessing.stocks.with.options > tmp && \
+            mv tmp sort -n -k1n,1 ~/archive/files/preprocessing.stocks.with.options
+            break
+        else
+            sleep 0.5
+        fi
+    done
+
+    cleanWorkingFiles    
     echo $(date "+%D %H:%M:%S") " -------------->>>> FIM <<<<------------------ " >> ~/archive/logs/preprocessing.log
 
 }
