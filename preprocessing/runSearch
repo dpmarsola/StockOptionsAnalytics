@@ -35,6 +35,7 @@ main(){
 
     beginLine=$1
     linesPerTask=$2
+    intervalBetweenSearches=$3
     counterSkipLines=0
     counterLinesProcessed=0
   
@@ -59,6 +60,8 @@ main(){
                 if [ "$counterLinesProcessed" -eq "$linesPerTask" ]
                 then
                     break
+                else
+                    sleep $intervalBetweenSearches
                 fi
             fi
 
@@ -71,4 +74,4 @@ main(){
 
 echo $(date "+%D %H:%M:%S") " - Starting task $$ >>> beginning at line $1 and will seach the next $2 lines" >> ~/archive/logs/preprocessing.log
 
-main $1 $2
+main $1 $2 $3

@@ -37,6 +37,7 @@ cleanStocksSpecialChars(){
 
 getParameters(){
     linesPerTask=$(grep "^linesPerTask" ./preprocessing.conf | cut -d'=' -f2)
+    intervalBetweenSearches=$(grep "^intervalBetweenSearches" ./preprocessing.conf | cut -d'=' -f2)
 }
 
 calcNumberOfTasks(){
@@ -78,7 +79,7 @@ main(){
 
     while [ "$count" -le "$numberOfTasks" ] 
     do
-        ./runSearch $beginLine $linesPerTask & 2> /dev/null > /dev/null
+        ./runSearch $beginLine $linesPerTask $intervalBetweenSearches & 2> /dev/null > /dev/null
         count=$(expr $count + 1)
         beginLine=$(expr $beginLine + $linesPerTask)
     done
