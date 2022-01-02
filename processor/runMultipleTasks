@@ -1,0 +1,107 @@
+#!/usr/bin/bash
+
+cleanWorkingFiles(){
+
+    rm $BASE_ARCH_DIR/temp/processor.tmp.working.* 2> /dev/null
+
+}
+
+backupOldFiles(){
+
+    scriptDir=$(pwd)
+
+    cd $BASE_ARCH_DIR/files/inputs
+
+    for file in $(ls processor*)
+    do
+        mv $file $BASE_ARCH_DIR/bkp/files/$file.$(date +%d%m%y%H%M)
+    done
+
+    cd $BASE_ARCH_DIR/files/outputs
+
+    for file in $(ls processor*)
+    do
+        mv $file $BASE_ARCH_DIR/bkp/files/$file.$(date +%d%m%y%H%M)
+    done
+
+    cd $BASE_ARCH_DIR/logs/
+    
+    for file in $(ls processor*)
+    do
+        mv $file $BASE_ARCH_DIR/bkp/logs/$file.$(date +%d%m%y%H%M)
+    done
+
+    cd $scriptDir
+
+}
+
+getParameters(){
+    linesPerTask=$(grep "^linesPerTask" ./processor.conf | cut -d'=' -f2)
+    intervalBetweenSearches=$(grep "^intervalBetweenSearches" ./processor.conf | cut -d'=' -f2)
+}
+
+calcNumberOfTasks(){
+
+    totalStocks=$(cat $BASE_ARCH_DIR/files/inputs/stock.list.all.clean | wc -l)
+    numberOfTasks=$(expr $totalStocks / $linesPerTask)
+    remainder=$(expr $totalStocks % $linesPerTask)
+
+    if [ "$numberOfTasks" -lt "1" ]
+    then
+        numberOfTasks=1
+    else
+        if [ "$remainder" -ne "0" ]
+        then
+            numberOfTasks=$(expr $numberOfTasks + 1)
+        fi
+    fi
+
+}
+
+keepTrackOfTasks(){
+    ls $BASE_ARCH_DIR/temp/processor.tmp.working* 2> /dev/null >(if [ "$?" -eq "0" ]; then flagTasksEnded=false; else flagTasksEnded=true; fi)
+}
+
+
+main(){
+
+    source ../globalVariables.conf
+    
+    count=1
+    beginLine=0
+    flagTasksEnded=false
+
+    backupOldFiles
+    cleanWorkingFiles
+    getParameters
+    calcNumberOfTasks
+
+    echo $(date "+%D %H:%M:%S") " -------------->>>> INICIO <<<<------------------ " >> $BASE_ARCH_DIR/logs/processor.log
+
+    while [ "$count" -le "$numberOfTasks" ] 
+    do
+        ./runSearch $beginLine $linesPerTask $intervalBetweenSearches & 2> /dev/null > /dev/null
+        count=$(expr $count + 1)
+        beginLine=$(expr $beginLine + $linesPerTask)
+    done
+    
+    while true
+    do
+        keepTrackOfTasks
+        echo "flag" $flagTasksEnded
+        if [ "$flagTasksEnded" == "true" ]
+        then
+            sort -n -k1n,1 $BASE_ARCH_DIR/files/outputs/processor.stocks.with.options > tmp && \
+            mv tmp $BASE_ARCH_DIR/files/outputs/processor.stocks.with.options
+            break
+        else
+            sleep 0.5
+        fi
+    done
+
+    cleanWorkingFiles    
+    echo $(date "+%D %H:%M:%S") " -------------->>>> FIM <<<<------------------ " >> $BASE_ARCH_DIR/logs/processor.log
+
+}
+
+main

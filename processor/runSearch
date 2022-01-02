@@ -1,0 +1,79 @@
+#!/usr/bin/bash
+
+runSearch(){
+
+    strMsgLog="$(date "+%D %H:%M:%S") Searching $1... "
+    strAux1=$(curl https://finance.yahoo.com/quote/$1/options?p=$1 2> /dev/null)
+    echo $strAux1 | sed 's/>/\n/g' | grep 'root.App.main' | cut -d'=' -f4-10000 | cut -d';' -f1-77 > $BASE_ARCH_DIR/temp/processor.tmp.working.file.$$
+    
+    if [ "$?" -eq "0" ]
+    then
+        strAux2=$(cat $BASE_ARCH_DIR/temp/processor.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['contractSymbol'])" 2> $BASE_ARCH_DIR/temp/processor.tmp.working.file.fail.$$ )
+
+        if [ -s $BASE_ARCH_DIR/temp/processor.tmp.working.file.fail.$$ ]
+        then 
+            strMsgLog=$(echo $strMsgLog "not found.")
+        else
+            strMsgLog=$(echo $strMsgLog "found OK.")
+            strAux3=$(cat $BASE_ARCH_DIR/temp/processor.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['impliedVolatility']['fmt'])" 2> /dev/null )
+            strAux4=$(cat $BASE_ARCH_DIR/temp/processor.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['strike']['fmt'])" 2> /dev/null )
+            strAux5=$(cat $BASE_ARCH_DIR/temp/processor.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['expiration']['fmt'])" 2> /dev/null )
+            strAux6=$(cat $BASE_ARCH_DIR/temp/processor.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['lastPrice']['fmt'])" 2> /dev/null )
+            strAux7=$(cat $BASE_ARCH_DIR/temp/processor.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['inTheMoney'])" 2> /dev/null )
+            strAux8=$(cat $BASE_ARCH_DIR/temp/processor.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['openInterest']['fmt'])" 2> /dev/null )
+            strAux9=$(cat $BASE_ARCH_DIR/temp/processor.tmp.working.file.$$ | python3 -c "import sys, json; print(json.load(sys.stdin)['context']['dispatcher']['stores']['OptionContractsStore']['contracts']['calls'][0]['lastTradeDate']['fmt'])" 2> /dev/null )
+    
+            echo $1,$strAux2,$strAux3,$strAux4,$strAux5,$strAux6,$strAux7,$strAux8,$strAux9
+        fi
+    fi
+
+    echo $strMsgLog >> $BASE_ARCH_DIR/logs/processor.log
+
+}
+
+main(){
+
+    source ../globalVariables.conf
+    
+    beginLine=$1
+    linesPerTask=$2
+    intervalBetweenSearches=$3
+    counterSkipLines=0
+    counterLinesProcessed=0
+  
+    if [ -z "$linesPerTask" ]
+    then
+        if [ -z "$beginLine" ]
+        then
+            echo $(date "+%D %H:%M:%S") " - Error pre processing: Parms 1 (begin line) and 2 (lines per task) missing. " >> $BASE_ARCH_DIR/logs/processor.log
+        else
+            echo $(date "+%D %H:%M:%S") " - Error pre processing: Parm 2 (lines per task) missing. " >> $BASE_ARCH_DIR/logs/processor.log
+        fi
+    else
+        while read line 
+        do
+            
+            if [ "$counterSkipLines" -ge "$beginLine" ]
+            then
+                symbol=$(echo $line | cut -d',' -f1)
+                runSearch $symbol >> $BASE_ARCH_DIR/files/outputs/processor.stocks.with.options
+                counterLinesProcessed=$(expr $counterLinesProcessed + 1)
+
+                if [ "$counterLinesProcessed" -eq "$linesPerTask" ]
+                then
+                    break
+                else
+                    sleep $intervalBetweenSearches
+                fi
+            fi
+
+            counterSkipLines=$(expr $counterSkipLines + 1)
+
+        done < $BASE_ARCH_DIR/files/inputs/stock.list.all.clean
+    fi
+
+}
+
+echo $(date "+%D %H:%M:%S") " - Starting task $$ >>> beginning at line $1 and will seach the next $2 lines" >> $BASE_ARCH_DIR/logs/processor.log
+
+main $1 $2 $3
